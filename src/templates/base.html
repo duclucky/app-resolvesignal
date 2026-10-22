@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ page_title|default('ResolveSignal') }}</title>
+<link rel="icon" type="image/png" href="{{ asset_url('resolvesignal-logo.png') }}">
+<link rel="stylesheet" href="{{ asset_url('style.css') }}">
+{% block head %}{% endblock %}</head>
+<body data-page="{{ page|default('home') }}" {% block body_attributes %}{% endblock %}>
+<a class="skip" href="#main">Skip to main content</a>
+{% include '_navigation.html' %}
+<main id="main" class="{{ main_class|default('') }}">{% if public_demo %}<aside class="demo-notice" aria-label="Shared demo privacy and limits"><p><strong>Shared public demo.</strong> Results and reviews are public. No private data.</p><details><summary>Live limits & how it works</summary><p>Live check accepts two public HTTPS product links. Use US storefronts with USD prices. Links, results and reviews are shared publicly. Results also includes saved checks and clearly marked made-up examples. Viewing saved results uses no provider credits. Choosing Run a new check fetches that result's pages again and uses capped credits. Up to two checks per visitor session per hour, within three shared live checks per hour. These counters persist across service restarts. Made-up examples use no provider credits.</p></details></aside>{% endif %}{% block content %}{% endblock %}
+<footer><span>Evidence first. Pricing decisions stay with you.</span><span>Listed prices only · Shipping and tax may differ</span><nav aria-label="Secondary navigation"><a href="/quality" {% if page == 'quality' %}aria-current="page"{% endif %}>Technical validation</a></nav></footer></main>
+{% block scripts %}{% endblock %}</body></html>

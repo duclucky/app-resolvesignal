@@ -1,0 +1,3 @@
+<details class="export-menu"><summary>Download group ↓</summary><p class="help">Includes all results in this group.</p><nav class="export-options" aria-label="Download all results in this group">
+{% for fmt,label in [('html','Report'),('csv','CSV'),('json','JSON (technical)')] %}<a {% if batch_id %}href="/api/batches/{{ batch_id }}/export?format={{ fmt }}"{% else %}id="export-{{ fmt }}"{% endif %}>{{ label }}</a>{% endfor %}
+</nav></details>

@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block body_attributes %}data-case-id="{{ case_id }}" data-batch-id="{{ batch_id }}" data-live-enabled="{{ 'true' if live_enabled else 'false' }}"{% endblock %}
+{% block content %}<header class="case-heading"><a id="back-to-queue" class="back-link" href="/investigations?batch={{ batch_id }}">← Back to results</a><h1 id="case-title">{{ case_title }}</h1><p id="case-intro" class="case-intro">See the result, its source evidence and what to do next.</p></header>
+{% if guided %}<p class="guided-notice">This is a saved result. Opening it does not run a new check.</p>{% endif %}
+<div id="message" role="status" aria-live="polite"></div><div id="cases" aria-live="off"><p class="pending-note">Loading this result…</p></div>
+<div class="case-export">{% include '_export_menu.html' %}</div><noscript><p class="error">Enable JavaScript to view this result and save your review.</p></noscript>{% endblock %}
+{% block scripts %}{% include '_app_scripts.html' %}{% endblock %}

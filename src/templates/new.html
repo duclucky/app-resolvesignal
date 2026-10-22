@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block head %}<link rel="stylesheet" href="{{ asset_url('spotlight.css') }}"><script src="{{ asset_url('spotlight.js') }}" defer></script>{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">{{ 'LIVE CHECK' if public_demo else 'NEW CHECK' }}</p><h1>Check two offers.</h1><p class="lead">Choose the products you want to check. Add two product page links to compare their details and price conditions.</p></div><a class="text-button" href="/investigations">View saved results →</a></div>
+<div id="message" role="status" aria-live="polite"></div>
+<div class="new-layout"><section class="form-panel" aria-labelledby="input-heading">
+<h2 id="input-heading">Your product pages</h2><p class="muted">US storefronts · USD prices · Any product type</p>
+<ol class="help" id="check-steps"><li>Open each product page and choose the exact size, color or version.</li><li>Copy each full HTTPS link into Offer A and Offer B below.</li><li>Run the check, read the evidence and missing details, then save your review.</li></ol>
+<form id="case-form" aria-describedby="check-steps mode-help" novalidate>
+<label for="sku">Product name or SKU <span class="optional">optional</span></label><input id="sku" name="sku" placeholder="e.g. Headphones price check" maxlength="100" autocomplete="off">
+<label for="reference">Offer A page link</label><input id="reference" name="reference_url" type="url" required placeholder="https://store-a.com/product/..." aria-describedby="reference-error" autocomplete="off"><p id="reference-error" class="field-error" hidden></p>
+<label for="competitor">Offer B page link</label><input id="competitor" name="competitor_url" type="url" required placeholder="https://store-b.com/product/..." aria-describedby="competitor-error" autocomplete="off"><p id="competitor-error" class="field-error" hidden></p>
+<label for="mode">How to check</label><select id="mode">{% if not public_demo %}<option value="public">Read product pages only</option>{% endif %}<option value="live">Use AI and web sources</option></select>
+<p class="help" id="mode-help">{% if public_demo %}Uses Tavily and NVIDIA on Nebius within the demo credit limits. Up to two checks per visitor session per hour, within three shared new checks or rechecks per hour.{% else %}Reads the product pages without model calls or provider credits. Missing details stay unknown.{% endif %}</p>
+{% if public_demo %}<p class="help">Links, results and reviews are public. Use public product links only. Do not add account, cart or private links.</p>{% endif %}
+<button class="primary" id="investigate" type="submit">Run a new check <span aria-hidden="true">↗</span></button><p id="form-status" class="help" role="status" aria-live="polite"></p>
+</form>
+{% if not public_demo %}<details class="csv-section"><summary>Check several pairs from a CSV</summary><p class="help">Columns: sku, reference_url, competitor_url. Up to 25 pairs. Preview the rows before reading any pages.</p><label for="csv-file">Choose CSV file</label><input id="csv-file" type="file" accept=".csv,text/csv"><pre id="csv-preview" role="status"></pre><button id="run-csv" class="secondary" disabled>Check these rows</button></details>{% endif %}
+</section>
+<aside class="start-guide" aria-label="Help and saved examples">
+<div class="starter-card"><span class="tag">BEFORE YOU START</span><h3>Use product pages, not search pages.</h3><p>Public HTTPS links from other stores are welcome. Prices must be in USD. Choose the exact product version on both pages.</p><p class="help">Some stores block automated reading. Missing details stay unknown. For products beyond SSDs and keyboards, a matching valid product barcode is needed before we can say the prices are comparable.</p><a class="secondary" href="/investigations">View saved results →</a></div>
+{% if demo_case %}<div class="sample-box"><p class="eyebrow">VIEW ONLY · NO CREDITS USED</p><h3>Start with a saved check</h3><p>See the Adafruit example without reading the pages again.</p><a id="open-saved" class="secondary" href="/cases/{{ demo_case.id }}#decision-summary">{{ 'View saved result' if demo_case.state in ['completed','partial'] else 'View previous attempt' if demo_case.state in ['failed','cancelled','interrupted'] else 'View current check' }} ↗</a></div>{% endif %}
+<details class="sources-list"><summary>Fill in a known example</summary><p>Adafruit SSDs: 256 GB and 512 GB. Same store, different storage sizes.</p><button type="button" id="selected-pair" class="secondary" data-mode="{{ 'live' if public_demo else 'public' }}" data-reference="{{ selected_source_urls[0] }}" data-competitor="{{ selected_source_urls[1] }}">Fill in these page links ↗</button><p class="help">Fills the form only. Choose Run a new check to read the pages.</p></details>
+<div class="sample-box"><p class="eyebrow">TRY WITHOUT LIVE SOURCES</p><p>See matching offers, different offers and missing details.</p><button id="samples" type="button" class="text-button">Try made-up examples →</button><small>Made-up offers. No live prices or provider credits used.</small></div>
+</aside></div><noscript><p class="error">Enable JavaScript to run a new check.</p></noscript>
+{% endblock %}
+{% block scripts %}{% include '_app_scripts.html' %}{% endblock %}

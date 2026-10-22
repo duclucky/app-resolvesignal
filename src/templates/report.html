@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Offer investigation report</title></head>
+<body><h1>Offer investigation report</h1>
+<p>Listed-price comparison. Shipping and tax may differ. No price changes were executed.</p>
+{% for row in rows %}<section><h2>{{row.request.sku or row.id}}</h2>
+<p>Revision {{row.revision}} · {{row.state}} · {{row.result.mode if row.result else 'pending'}}</p>
+{% if row.result %}{% if row.decision_current %}<h3>{{row.result.decision.outcome}}</h3><p>{{row.result.decision.action}}</p>
+{% else %}<p><strong>No completed decision for this attempt. The evidence below is retained for inspection.</strong></p><h3>Retained outcome: {{row.result.decision.outcome}}</h3>{% endif %}
+{% if row.result.comparison_scope %}<p><strong>{{row.result.comparison_scope.notice}}</strong> ({{row.result.comparison_scope.kind}})</p>{% endif %}
+{% if row.result.refresh_comparison %}{% set change=row.result.refresh_comparison %}
+<h3>Changes since revision {{change.previous_revision}}</h3>
+<p>{{change.basis}}</p>
+<p>Decision: {{change.previous_outcome}} → {{change.current_outcome}}</p>
+{% if not change.complete_pair %}<p>Incomplete refresh evidence. Offer changes could not be established.</p>
+{% elif not change.fields %}<p>No changes in the compared retrieved attributes. Missing facts can still be unresolved.</p>
+{% else %}<ul>{% for item in change.fields %}<li>{{item.side}} · {{item.field}}: {{item.before if item.before is not none else 'Unknown'}} → {{item.after if item.after is not none else 'Unknown'}}</li>{% endfor %}</ul>{% endif %}{% endif %}
+<p>Evidence basis: {{row.result.decision.evidence_basis or 'retrieved_only'}}</p>
+{% if row.result.decision.evidence_basis == 'operator_assisted' %}
+<strong>Operator-assisted result. Confirmation sources and operator identity were not independently verified by the app.</strong>{% endif %}
+{% for reason in row.result.decision.reasons %}<p>{{reason}}</p>{% endfor %}
+{% for caveat in row.result.decision.caveats or [] %}<p>{{caveat}}</p>{% endfor %}
+{% if row.result.mode in ['sample','synthetic'] %}<strong>Constructed sample. No current prices or live API calls.</strong>{% endif %}
+{% for offer in row.result.offers or [] %}<h4>{{offer.title}}</h4><p>{{offer.url}}</p><p>Retrieved: {{offer.observed_at}}</p>
+<ul>{% for evidence in offer.evidence %}<li>{{evidence.field}}: {{evidence.excerpt}} — {{evidence.url}}{% if evidence.retrieved_at %} — {{evidence.retrieved_at}}{% endif %}
+{% if evidence.origin == 'operator_confirmed' %}<strong>Operator-confirmed by {{evidence.confirmed_by}} at {{evidence.confirmed_at}}; source not independently checked.</strong>{% endif %}</li>{% endfor %}</ul>{% endfor %}
+{% if row.result.operator_confirmations %}<h3>Operator confirmation audit</h3>
+{% for item in row.result.operator_confirmations %}<p>{{item.side}} · {{item.field}} = {{item.value}} · {{'Active' if item.active else 'Withdrawn'}} · {{item.confirmed_by}} · {{item.confirmed_at}}</p>
+<blockquote>{{item.excerpt}}</blockquote><p>{{item.source_url}}</p>
+{% if not item.active %}<p>Withdrawn: {{item.withdrawn_at}} · {{item.withdrawal_note}}</p>{% endif %}{% endfor %}{% endif %}{% endif %}
+<h3>Review history</h3>{% for r in row.reviews %}<p>Revision {{r.revision}}: {{r.status}} — {{r.note}}</p>{% endfor %}
+{% for old in row.history if old.revision < row.revision %}
+<details><summary>Previous evidence revision {{old.revision}} · {{old.result.decision.outcome}}</summary>
+<p>Historical evidence basis: {{old.result.decision.evidence_basis or 'retrieved_only'}}. Historical confirmations do not apply to a later retrieval.</p>
+{% for item in old.result.operator_confirmations or [] %}
+<p>{{item.side}} · {{item.field}} = {{item.value}} · {{'Active in that revision' if item.active else 'Withdrawn'}} · {{item.confirmed_by}} · {{item.confirmed_at}}</p>
+<blockquote>{{item.excerpt}}</blockquote><p>{{item.source_url}}</p>{% endfor %}</details>{% endfor %}
+</section>{% endfor %}
+</body></html>

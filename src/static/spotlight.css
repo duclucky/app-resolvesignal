@@ -1,0 +1,7 @@
+/* Adapted from React Bits Spotlight Card, (c) 2026 David Haz.
+   MIT + Commons Clause; see ../../THIRD_PARTY_NOTICES.md. */
+.spotlight-card{position:relative;isolation:isolate;overflow:hidden}
+.spotlight-card:after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(240px circle at var(--light-x,50%) var(--light-y,20%),#e3ffc240,transparent 78%);opacity:0;transition:opacity .25s ease;z-index:0}
+.spotlight-card>*{position:relative;z-index:1}
+.spotlight-card:hover:after,.spotlight-card:focus-within:after{opacity:1}
+@media(prefers-reduced-motion:reduce){.spotlight-card:after{transition:none;background:radial-gradient(240px circle at 50% 20%,#e3ffc220,transparent 78%)}}

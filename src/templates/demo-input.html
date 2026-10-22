@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="page-heading compact-heading live-check-heading"><div><h1>Live check</h1><p class="lead">View a saved result, or check the source pages again for a new result.</p></div></header>
+<div id="message" role="status" aria-live="polite"></div>
+<section class="demo-preset live-check-choices" aria-label="Choose how to view or check these offers">
+<div class="saved-choice" aria-labelledby="saved-choice-title"><p class="eyebrow">VIEW ONLY · NO PROVIDER CREDITS</p>
+{% if demo_case %}
+{% if demo_case.state in ['completed','partial'] %}
+<h2 id="saved-choice-title">View a saved result</h2><p>Open the previous check. This does not fetch the pages again or use provider credits.</p>
+{% if demo_case.state == 'partial' %}<p class="help">Partly complete: open the result to see which details are still missing.</p>{% endif %}
+<a id="open-saved" class="primary" href="/cases/{{ demo_case.id }}#decision-summary">View saved result ↗</a>
+<p class="help saved-result-label">Saved result · prices may have changed since this check.</p>
+{% elif demo_case.state in ['failed','cancelled','interrupted'] %}
+<h2 id="saved-choice-title">View the previous attempt</h2><p>The last check did not finish. Open it to see any evidence saved so far. Viewing does not run the check again.</p>
+<a id="open-saved" class="secondary" href="/cases/{{ demo_case.id }}#decision-summary">View previous attempt ↗</a>
+{% else %}
+<h2 id="saved-choice-title">View the current check</h2><p>A check is already in progress. Open it to see how it is going. Viewing does not start another check.</p>
+<a id="open-saved" class="secondary" href="/cases/{{ demo_case.id }}#decision-summary">View current check ↗</a>
+{% endif %}
+{% if demo_case.times %}<div class="saved-check-times"><p class="help">{% if demo_case.state in ['completed','partial'] %}Source pages last checked:{% else %}Times stored with earlier evidence:{% endif %}</p><ul>{% for time in demo_case.times %}<li><time datetime="{{ time }}">{{ time }}</time></li>{% endfor %}</ul></div>{% else %}<p class="help">No source check time is available.</p>{% endif %}
+{% else %}
+<h2 id="saved-choice-title">No saved result yet</h2><p>Run a new check to get the first result for these pages. You can also try the made-up examples below.</p>
+{% endif %}</div>
+<aside class="live-choice" aria-labelledby="new-check-title"><p class="eyebrow">FETCH PAGES AGAIN · USES PROVIDER CREDITS</p><h2 id="new-check-title">Run a new check</h2><p>Read both product pages again and compare the latest details. This may take a while. Some details may still be missing.</p>
+{% if demo_case %}<button id="demo-refresh" class="secondary" data-case-id="{{ demo_case.id }}" {% if demo_case.state not in ['completed','partial','failed','cancelled','interrupted'] %}disabled{% endif %}>Run a new check ↗</button>
+<p class="help">Creates a new result version. Earlier evidence and reviews are kept.</p>
+{% else %}<button id="start-demo" class="secondary" data-reference="{{ selected_source_urls[0] }}" data-competitor="{{ selected_source_urls[1] }}">Run a new check ↗</button><p class="help">Creates the first result for these pages.</p>{% endif %}
+<p class="help">Uses demo provider credits within the set limits. Up to three live checks per hour, shared by all visitors. Prices are not changed automatically.</p><p id="demo-status" class="help" role="status">{% if demo_case and demo_case.state not in ['completed','partial','failed','cancelled','interrupted'] %}A check is already running. View the current check to see its progress.{% endif %}</p></aside>
+</section>
+<section class="live-check-sources" aria-labelledby="demo-preset-title"><h2 id="demo-preset-title">Pages used for this demo</h2><p>Two Adafruit SSDs: 256 GB and 512 GB. Both are from the same store. This checks different product versions, not prices from competing stores.</p><div class="preset-products">{% for url in selected_source_urls %}<a href="{{ url }}" target="_blank" rel="noopener noreferrer"><strong>{{ '256 GB' if loop.first else '512 GB' }}</strong><span>View Adafruit product {{ '6090' if loop.first else '6089' }} ↗</span></a>{% endfor %}</div></section>
+<div class="demo-alternative"><button id="demo-samples" class="text-button">Try made-up examples →</button><span class="help">Offers match, offers differ, or details are missing. No live prices or provider credits used.</span></div>
+{% endblock %}
+{% block scripts %}{% include '_app_scripts.html' %}{% endblock %}

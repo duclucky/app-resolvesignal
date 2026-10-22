@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="page-heading compact-heading"><div><h1>{{ 'Saved example' if example else 'Try an example' }}</h1></div></header>
+{% if example %}
+<section class="first-result" aria-labelledby="first-result-title"><div class="first-verdict"><p class="eyebrow">REAL EXAMPLE · SAVED RESULT</p><h2 id="first-result-title">Do not compare these prices.</h2><p>A 256 GB drive and a 512 GB drive have different storage sizes. Both are from the same store. This example does not compare prices from competing stores.</p><a class="primary" data-open-saved-case href="/cases/{{ example.id }}?guide=1#decision-summary">View saved result ↗</a><p class="help">Saved result — not a new live run. Viewing it uses no provider credits.</p></div>
+<div class="first-quotes">{% for offer in example.offers %}<article><h3>{{ offer.capacity }}</h3><blockquote>{{ offer.quote }}</blockquote><a href="{{ offer.url }}" target="_blank" rel="noopener noreferrer">Adafruit product {{ '6090' if loop.first else '6089' }} ↗</a><p class="help">Last checked <time datetime="{{ offer.observed_at }}">{{ offer.observed_label }}</time></p></article>{% endfor %}</div></section>
+<p class="help">These are saved check times. Stock and prices may have changed; missing details stay unknown.</p>
+{% else %}<section class="first-result first-fallback"><div><h2>Try three made-up examples.</h2><p>See offers that match, offers that differ, and missing details. These fictional examples use no live prices or provider credits.</p><button id="guided-samples" class="primary" type="button">Try made-up examples ↗</button><div id="message" role="status" aria-live="polite"></div></div></section>{% endif %}
+<div class="first-next"><a class="text-button" href="/new">{{ 'Live check →' if public_demo else 'New check →' }}</a>{% if public_demo %}<p class="help">Live check lets you view a saved result or run a new check of the selected Adafruit pages. New checks use provider credits within the demo limits.</p>{% endif %}</div>
+{% endblock %}{% block scripts %}{% include '_app_scripts.html' %}{% endblock %}
