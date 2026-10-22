@@ -65,17 +65,9 @@ For real agent investigations, follow [Live configuration](docs/configuration.md
 
 ## How the live agent works
 
-```mermaid
-flowchart TD
-    A["Two public product URLs"] --> B["Direct page reads and Tavily extraction"]
-    B --> C["NVIDIA on Nebius: evidence question"]
-    C --> D["Tavily: follow-up search and extraction"]
-    D --> E["NVIDIA on Nebius: proposed facts and exact quotes"]
-    E --> F["Source validation and deterministic comparison rules"]
-    F --> G["Result, evidence and missing details"]
-    G --> H["Your review, exports and manual recheck"]
-    G -. "Optional minimized trace" .-> I["LangSmith with readback verification"]
-```
+![Live investigation workflow from product URLs through evidence validation to review](docs/images/workflow.svg)
+
+[Editable Mermaid source](docs/workflow.mmd). The diagram is a static SVG so it remains readable without an external diagram renderer.
 
 | Component | Job |
 |---|---|

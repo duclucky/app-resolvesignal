@@ -20,7 +20,7 @@ def package(destination):
         raise ValueError('Release packages must stay inside this event deliverables directory.')
     selected=[ROOT/name for name in FILES]
     selected += [p for name in FOLDERS for p in (ROOT/name).rglob('*')
-                 if p.is_file() and '__pycache__' not in p.parts and p.suffix in ('.py','.cjs','.js','.html','.css','.json','.md','.png')]
+                 if p.is_file() and '__pycache__' not in p.parts and p.suffix in ('.py','.cjs','.js','.html','.css','.json','.md','.png','.svg','.mmd')]
     selected += [ROOT/'deployment/vps/Dockerfile']
     payload={}
     local_secrets=[str(value).encode() for name,value in dotenv_values(ROOT/'.env').items()

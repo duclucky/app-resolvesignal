@@ -1,0 +1,9 @@
+flowchart TD
+    A["Two public product URLs"] --> B["Direct page reads and Tavily extraction"]
+    B --> C["NVIDIA on Nebius: evidence question"]
+    C --> D["Tavily: follow-up search and extraction"]
+    D --> E["NVIDIA on Nebius: proposed facts and exact quotes"]
+    E --> F["Source validation and deterministic comparison rules"]
+    F --> G["Result, evidence and missing details"]
+    G --> H["Your review, exports and manual recheck"]
+    G -.->|Optional minimized trace| I["LangSmith with readback verification"]
