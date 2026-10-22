@@ -4,7 +4,7 @@
 
 ResolveSignal helps online sellers investigate whether two retail offers are actually comparable. A lower price may refer to a different capacity, a refurbished item, a multipack or a member-only offer. The app keeps the differences, missing facts, source quotes and your review together. It never changes a store price.
 
-[Try the public demo](https://app.resolvesignal.com) · [Live configuration](docs/configuration.md) · [Troubleshooting](docs/troubleshooting.md)
+[Try the public demo](https://app.resolvesignal.com) · [Watch the demo video](https://youtu.be/O86Wp55BtR4) · [Live configuration](docs/configuration.md) · [Troubleshooting](docs/troubleshooting.md)
 
 ![Saved result showing different SSD capacities and a Do not compare decision](docs/images/comparison.png)
 
