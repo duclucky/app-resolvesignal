@@ -9,7 +9,7 @@ import zipfile
 ROOT=Path(__file__).resolve().parents[1]
 FILES=('README.md','LICENSE','THIRD_PARTY_NOTICES.md','.gitignore','.env.example',
        'requirements.txt','requirements.lock','requirements.linux.lock','run.ps1')
-FOLDERS=('src','tests','scripts','data/fixtures')
+FOLDERS=('src','tests','scripts','data/fixtures','docs')
 SECRET=re.compile(rb'tvly-[A-Za-z0-9_-]{24,}|lsv2_pt_[A-Za-z0-9_]{24,}|-----BEGIN (?:OPENSSH|RSA|EC) PRIVATE KEY-----')
 
 

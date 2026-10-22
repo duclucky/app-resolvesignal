@@ -1,83 +1,130 @@
 # ResolveSignal
 
-Investigate whether two retail offers are actually comparable before acting on a price alert. Exact variants, source quotes, missing facts and review history stay visible. The app never changes store prices.
+**Check the offer behind a price alert before changing your price.**
 
-Public demo: https://app.resolvesignal.com . This is a shared demonstration: results and reviews are public. Choose two public HTTPS product pages from US storefronts with USD prices. Product links, results and reviews are public; do not enter private information.
+ResolveSignal helps online sellers investigate whether two retail offers are actually comparable. A lower price may refer to a different capacity, a refurbished item, a multipack or a member-only offer. The app keeps the differences, missing facts, source quotes and your review together. It never changes a store price.
+
+[Try the public demo](https://app.resolvesignal.com) · [Live configuration](docs/configuration.md) · [Troubleshooting](docs/troubleshooting.md)
+
+![Saved result showing different SSD capacities and a Do not compare decision](docs/images/comparison.png)
+
+*Actual application screenshot: a saved Adafruit 256 GB /512 GB comparison. Both offers are from the same store and were out of stock when checked. These are timestamped observations, not current prices or a competitor savings claim.*
+
+## Try it without API keys
+
+Use the [public demo](https://app.resolvesignal.com), or run a local copy below. A new local installation has no hosted results or customer data.
+
+1. Open **Live check** in the public demo, or **New check** locally.
+2. Choose **Try made-up examples**. This uses fictional offers and makes no live provider calls.
+3. Open a result. Read **What to do next**, compare the offers and expand **Source evidence**.
+4. Choose a review status, optionally add a note, then **Save review**. Reload to see that it persists.
+5. Use **Download group** for CSV, JSON or an HTML report. **Run example again** creates a new version; the earlier review stays in history.
+
+The public demo also has saved real investigations. Viewing them uses no new provider credits. New live checks use the shared allowance. Product links, results and reviews in the public demo are public; use public product information only.
+
+## Check your own products
+
+Choose **Check your products** on the homepage, paste two public HTTPS product-page links, select the exact size/color/version on each page, and choose **Run a new check**. Use US storefronts with USD prices. Any product type can be investigated; a readable page and sufficient evidence are still needed. The input is two URLs, not a product-name shopping search.
+
+| Result | Meaning | Your next step |
+|---|---|---|
+| **Can compare** | Required product details and offer terms match on the listed-price basis. | Inspect the difference, stock and caveats, then save your review. |
+| **Do not compare** | Supported evidence identifies a material difference. | Check the quoted difference; do not use this pair for a price change. |
+| **More info needed** | Required facts are missing, stale or inconsistent. | Follow the recovery steps, inspect the sources or try different links. |
+
+**Can compare** does not mean the cheaper item is available or that a price change is recommended. An out-of-stock offer can have comparable listed terms while the suggested action is to monitor availability. Shipping and tax may differ.
 
 ## Run locally
 
-Verified with CPython 3.13 on Windows and Linux. From this directory:
+Prerequisites: **CPython 3.13**, Git and a browser with JavaScript enabled. Windows and Linux dependency locks are included. Node.js is only needed for the JavaScript tests; those tests were verified with Node.js 24.
+
+```sh
+git clone https://github.com/duclucky/app-resolvesignal.git
+cd app-resolvesignal
+```
+
+### Windows PowerShell
 
 ```powershell
-python -m venv .venv
+py -3.13 -m venv .venv
 .venv/Scripts/python.exe -m pip install --require-hashes -r requirements.lock
 .venv/Scripts/python.exe -m uvicorn src.main:app --host 127.0.0.1 --port 8000
 ```
 
-On Linux use `python3.13 -m venv .venv`, `.venv/bin/python -m pip install --require-hashes -r requirements.linux.lock`, then `.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000`.
+### Linux
 
-Open http://127.0.0.1:8000 . Fictional samples and the local quality suite work without credentials. `run.ps1` is a Windows convenience launcher. Docker setup is in `deployment/vps/Dockerfile`; build from the application root. Verification used an existing pinned Windows/Linux runtime; a fresh dependency installation or Dockerfile build is not claimed.
+```sh
+python3.13 -m venv .venv
+.venv/bin/python -m pip install --require-hashes -r requirements.linux.lock
+.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+```
 
-Connections are configured on the server; there is no browser settings page. Copy `.env.example` to `.env` only when enabling integrations, and configure keys locally. Never commit populated environment files. Local state defaults to `data/investigations.sqlite3`; set `APP_DATA_DIR` and `APP_ENV_FILE` for separate profiles. Local access remains bound to loopback.
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000), then follow **Try it without API keys** above. Stop the server with `Ctrl+C`. `run.ps1` is a Windows convenience launcher for an available Python 3.13 installation. Live calls are off by default; no `.env` file is needed for fictional examples.
 
-## First look
+For real agent investigations, follow [Live configuration](docs/configuration.md). Adding keys alone is insufficient: live calls must be enabled and **both usage caps must be greater than zero**. LangSmith tracing is optional. Public page inspection is also available locally without model/provider calls, but still makes network requests to the product pages.
 
-Choose **Check your products** on the homepage to enter two product links, or use the secondary saved-result action to explore without provider calls. An empty local installation offers clearly labeled fictional examples; it does not include the hosted demo's database. `/start` remains a compact source-context/fallback route. A real saved-example shortcut requires completed selected-source evidence, successful NVIDIA/Nebius and Tavily steps and a verified LangSmith receipt.
+## How the live agent works
 
-Public `/new` accepts one pair of public HTTPS product URLs from any storefront. Select the exact product version, paste Offer A and Offer B, then choose **Run a new check**. This uses Tavily and NVIDIA on Nebius within the configured caps. Merely opening the form or viewing saved results does not call providers. Public CSV is hidden; private profiles retain CSV and page-only inspection. Saved examples remain available separately.
+```mermaid
+flowchart TD
+    A["Two public product URLs"] --> B["Direct page reads and Tavily extraction"]
+    B --> C["NVIDIA on Nebius: evidence question"]
+    C --> D["Tavily: follow-up search and extraction"]
+    D --> E["NVIDIA on Nebius: proposed facts and exact quotes"]
+    E --> F["Source validation and deterministic comparison rules"]
+    F --> G["Result, evidence and missing details"]
+    G --> H["Your review, exports and manual recheck"]
+    G -. "Optional minimized trace" .-> I["LangSmith with readback verification"]
+```
 
-Case detail leads with action, reason and missing facts, followed by compact offers, selected quotes and version-specific review. **More details** preserves all attributes, source evidence, provider receipts, sourced confirmations and history. **Download group** provides CSV, JSON and an HTML report. Public **Technical validation** retains the offline suite and integration receipts, omits owner tools and rejects developer-batch creation.
+| Component | Job |
+|---|---|
+| **NVIDIA on Nebius Token Factory** | `nvidia/Nemotron-3.5-Super-VL` asks a bounded evidence question and proposes facts with exact quotes. |
+| **Tavily** | Extracts permitted page text and searches for follow-up evidence. Search snippets are discovery leads, not verified merchant prices. |
+| **Validation and comparison rules** | Check source support, identity, selected variants, condition, pack quantity, price terms, currency, availability and freshness. |
+| **LangSmith, optional** | Records minimized outcomes, counters and provider summaries with readback verification. Page text, prompts, URLs, keys and review notes are excluded. |
 
-## Local/private input journey
+Adafruit pages 6090/6089 are fetched directly under a specific rate policy rather than sent to remote extraction. Source text is evidence, never tool-execution authority. Failed optional tracing does not discard an investigation.
 
-1. Open **Live check** (public) or **New check** (private). Select the exact size/color/version on each US product page, then paste both full HTTPS links. Any product type can be investigated; private/account/search pages are unsuitable.
-2. Choose public page inspection or live agent investigation. Public inspection uses no Tavily/Nebius inference. Live mode requires configured keys and enabled credit caps.
-3. Open a case from the queue. Inspect the decision, unknown fields, quoted sources and actual provider steps.
-4. Save a revision-specific review; export the full batch as CSV, JSON or an HTML report.
-5. Recheck for a new evidence revision. Previous evidence/reviews remain historical; a fresh revision needs a new review. Cancelled/interrupted attempts cannot be counted as fresh positive decisions.
+Built with FastAPI, Pydantic, Jinja, native JavaScript and SQLite. No React runtime or animation framework is required. Code, tests, fictional fixtures, helpers and documentation live under `src/`, `tests/`, `data/fixtures/`, `scripts/` and `docs/`.
 
-Routes: `/new`, `/investigations`, `/cases/{id}`, `/quality` (Technical validation in the footer). CSV preview supports at most 25 rows with `sku,reference_url,competitor_url` columns in local profiles. The public demo accepts one live pair per request. It also retains saved real and clearly fictional examples.
+## Evidence and limitations
 
-## Integrations and evidence
+- The [saved Adafruit result](https://app.resolvesignal.com/cases/27ef6e395a1e4142b4c69d19b7bf9f51) demonstrates a supported capacity mismatch, with actual Tavily/NVIDIA-on-Nebius calls and a verified LangSmith receipt. It is a same-store variant control.
+- The [JBL/Harman investigation](https://app.resolvesignal.com/cases/7509de944ae44383a4adde38f0c71a64) demonstrates a real failure path. Both direct sources returned HTTP 403 in the checked recheck. Tavily/model calls ran, but no retailer claims passed validation on that attempt, so the result needs more information.
+- SSDs and keyboards have category-specific checks. Other product types require matching validated GTIN/UPC/EAN barcodes plus the existing offer checks before a positive comparison. Matching titles or a store SKU are insufficient.
+- Model-proposed barcodes need an exact labeled source span, a valid checksum and no competing labeled barcode in the supplied page evidence. JSON-LD and single-product microdata are supported; exact-variant evidence may still be missing.
+- Sourced user confirmations can fill certain missing attributes with a source URL, excerpt and explicit attestation. They remain user-reported, cannot overwrite known contradictions and must be renewed after recheck. They cannot supply a barcode.
+- Universal retailer access, a complete natural positive-price pair, customer adoption and measured seller time savings have not been established. A blocked page or unknown fact is not evidence of a match.
 
-- **NVIDIA on Nebius Token Factory:** `nvidia/Nemotron-3.5-Super-VL` asks a bounded evidence question and proposes fields with exact supporting quotes. An OpenAI-compatible HTTP endpoint is used; no OpenAI service is required.
-- **Tavily:** searches for relevant evidence and extracts permitted source text. Search snippets remain discovery leads. Adafruit pages 6090/6089 are fetched directly under a narrow source/rate policy; they are not sent to remote extraction. Tavily can research permitted follow-up sources in the agent workflow.
-- **LangSmith:** records minimized outcomes, counters and provider summaries with readback verification. Source pages, prompts, URLs, keys and review notes are excluded. Trace failure does not discard the local decision.
-
-Deterministic rules validate selected variants, condition, pack quantity, currency, stock, price eligibility and freshness before showing a comparable listed-price gap. Unknown fields stay unknown. Search/extraction or substring success alone does not prove a claim. Retrieved text is untrusted; no page instructions are executed.
-
-The selected Adafruit 256GB/512GB pair is a **same-merchant variant control**, not a competitor-price opportunity. Real runtime calls and a supported mismatch have been observed. Price and stock are timestamped observations, not current purchase guarantees. A complete natural positive-price pair, universal retailer retrieval, measured time savings and customer adoption have not been established. Generic products require matching validated product barcodes before a positive comparison; other missing or conflicting details remain explicit. Barcodes from model claims need an exact labeled source span, a valid checksum and no competing labeled barcode on that page. A single Product microdata block is supported alongside JSON-LD. Shipping and tax may differ.
-
-Operator confirmations can fill genuinely checked missing attributes only with a source URL, excerpt and explicit attestation. They remain visibly operator-assisted and are not independently verified. They cannot overwrite known contradictions and must be reconfirmed after recheck.
-
-Toloka and Tendem were experimental integrations and were removed on user instruction. No runtime client, background watcher, owner dispatch API/CLI or external review import remains. Historical private receipts are outside this source package.
-
-## Credit and access controls
-
-Configure `NEBIUS_API_KEY`, `TAVILY_API_KEY`, the exact `NEBIUS_MODEL`, and `LIVE_CALLS_ENABLED`. Optional tracing uses `LANGSMITH_API_KEY`, `LANGSMITH_WORKSPACE_ID`, `LANGSMITH_ENABLED`.
-
-Application caps reserve conservative usage; they are not actual billing or account balances. Maximum configurable limits are USD 5 Nebius and 200 Tavily credits. LangSmith allows at most 100 root-run reservations per database. Failed/uncertain calls retain reservations; do not delete state to extend allowance. No auto top-up or PAYG setting is changed.
-
-A live case has a 120-second deadline and bounded tool/model attempts, source context and retries. Non-HTTPS/private-network URLs, unsafe redirects and cross-origin writes are rejected. Direct source connections use validated public IPs while TLS verifies the original hostname. Hosted profiles lock settings. The public demo permits two live starts/rechecks per anonymous visitor session within three shared starts/rechecks per rolling hour. Atomic admissions and the session-signing secret persist in SQLite across restarts; opening saved results does not consume them. A signed HttpOnly/Secure/SameSite=Lax cookie identifies a seven-day visitor session. This is anonymous fairness, not authenticated identity: clearing cookies creates another session but cannot bypass the shared cap. Existing cumulative credit caps still apply. The 30-POST-per-minute guard remains process-local and cases are limited to 20 revisions. These are demo guards, not production multi-tenant guarantees.
-
-The homepage starts with **Check your products**. When evidence is missing, result recovery steps explain blocked or unreadable sources, exact product/barcode checks and missing offer terms. Open the sources, try different links, or save what still needs checking. Source confirmations require an exact same-store source for unfamiliar storefronts; they cannot supply an unsupported barcode or erase contradictions.
+Saved results are observations at their displayed check times. The public demo has capped live usage; it is a hackathon demonstration, not an authenticated production workspace. See [Configuration and access limits](docs/configuration.md#usage-and-access-limits).
 
 ## Verification
 
+The application release was checked on 22 October 2026 with **203 Python tests on Windows and Linux**, **11 JavaScript tests** and **37 fictional comparison scenarios**. Source publication was separately checked by manifest and isolated offline workflow. These checks do not establish natural retail accuracy or adoption. Pinned runtimes were reused; a fresh dependency installation or Dockerfile build is not claimed by that verification.
+
+From the repository root, on Windows:
+
 ```powershell
-.venv/Scripts/python.exe -m pytest -q --basetemp .cache/new-unique-run
+New-Item -ItemType Directory -Force .cache | Out-Null
+.venv/Scripts/python.exe -m pytest -q --basetemp .cache/readme-check-01
 node --test tests/ui-state.test.cjs
 .venv/Scripts/python.exe scripts/quality_eval.py --output .cache/local-quality.json
 ```
 
-Use a fresh app-local test directory. On Linux replace the Python executable path with `.venv/bin/python`. Local quality has 37 fictional, sourced regression scenarios; it measures those rule paths, not natural retail accuracy. Tests use controlled providers and do not make paid calls. Live checks need explicit scoped credit authorization and configured caps.
+On Linux:
 
-## Local review package
-
-```powershell
-.venv/Scripts/python.exe scripts/package_release.py
+```sh
+mkdir -p .cache
+.venv/bin/python -m pytest -q --basetemp .cache/readme-check-01
+node --test tests/ui-state.test.cjs
+.venv/bin/python scripts/quality_eval.py --output .cache/local-quality.json
 ```
 
-Creates `../deliverables/price-alert-investigator-source.zip` with a checked source manifest. It allowlists source, fixtures, tests, setup and license files; excludes credentials, databases, caches, captures and historical provider jobs. It does not publish a repository, video or competition entry.
+Create `.cache` before the first test run: pytest's `--basetemp` requires its parent directory to exist. Use a new `--basetemp` name on each run because pytest may clear that directory. Default tests use controlled providers and make no paid API calls; the quality command above uses fictional fixtures. External quality flags are separate opt-in operations.
 
-Original application code is MIT licensed. See `THIRD_PARTY_NOTICES.md` for the React Bits Spotlight adaptation and its separate license. The ecommerce API directory was a research reference; its product implementation was not imported.
+For setup errors, exhausted allowances, blocked pages, missing evidence and stale reviews, see [Troubleshooting](docs/troubleshooting.md).
+
+## License
+
+Original application code is [MIT licensed](LICENSE). The React Bits Spotlight adaptation has separate terms in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); those terms also describe the owner-supplied logo. The ecommerce API directory was a research reference; its product implementation was not imported. AI assistance was used for research and development.
